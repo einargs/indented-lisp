@@ -3,9 +3,7 @@ CFLAGS =
 
 BUILD_DIR = build
 
-ROOT_FILES = ./lexer.c
-
-SRC_FILES = $(ROOT_FILES)
+SRC_FILES = src/main.c src/*/*.c
 
 build: $(SRC_FILES)
 	$(CC) $(CFLAGS) $(SRC_FILES) -o $(BUILD_DIR)/out
