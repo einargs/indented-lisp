@@ -1,9 +1,7 @@
-#include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 #include <string.h>
 
-#define LEXER_CONTEXT_BUFFER_SIZE 100
+#include "lexer.h"
 
 bool isUpperCase(char target) {
   return 65 <= target && target <= 90;
@@ -17,20 +15,6 @@ bool isUnquotedName(char target) {
   return isLowerCase(target) || isUpperCase(target);
 }
 
-typedef enum {
-  T_L_PAREN,
-  T_R_PAREN,
-  T_INDENT,
-  T_NEW_LINE,
-  T_NAME,
-  T_EOF
-} TokenType;
-
-typedef struct {
-  TokenType type;
-  char *text;
-} Token;
-
 Token *newToken(TokenType type, char *text) {
   Token *token = malloc(sizeof(Token));
 
@@ -39,27 +23,6 @@ Token *newToken(TokenType type, char *text) {
 
   return token;
 }
-
-// Takes a pointer and an integer indicating how many
-// new characters should be loaded in.
-typedef void (*BufferRefiller)(char *startPtr, int numToLoad);
-
-typedef enum {
-  BASE_STATE = 0,
-  LEXING_INDENT = 1,
-  LEXING_NAME = 2
-} LexerState;
-
-typedef struct {
-  int length;
-  LexerState state;
-  bool isSrcDrained;
-  BufferRefiller refiller;
-  char *fullBuffer;
-  char **input;
-  bool isTokenCompleted;
-  Token *token;
-} LexerContext;
 
 void refillBuffer(LexerContext *ctx) {
   ctx->refiller(ctx->fullBuffer, LEXER_CONTEXT_BUFFER_SIZE);
@@ -194,23 +157,8 @@ Token *lexNextToken(LexerContext *ctx) {
   return pullToken(ctx);
 }
 
-
-//
-void refillFromStdin(char *startPos, int numToLoad) {
-  for (int i = 0; i < numToLoad; i++) {
-    int getcOutput = getc(stdin);
-
-    if (getcOutput == EOF) {
-      printf("found EOF\n");
-      startPos[i] = '\0';
-      break;
-    } else {
-      startPos[i] = (unsigned char) getcOutput;
-    }
-  }
-}
-
-char* tokenTypeNames[] = {
+// Token names
+const char *tokenTypeNames[] = {
   "T_L_PAREN",
   "T_R_PAREN",
   "T_INDENT",
@@ -218,16 +166,3 @@ char* tokenTypeNames[] = {
   "T_NAME",
   "T_EOF"
 };
-
-int main() {
-  LexerContext *ctx = newLexerContext(refillFromStdin);
-
-  while (!ctx->isSrcDrained) {
-    Token *token = lexNextToken(ctx);
-    printf("token: %s\n", tokenTypeNames[token->type]);
-  }
-
-  printf("fin\n");
-
-  return 0;
-}
