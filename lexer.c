@@ -26,15 +26,6 @@ typedef enum {
   T_EOF
 } TokenType;
 
-char* tokenTypeNames[6] = {
-  "T_L_PAREN",
-  "T_R_PAREN",
-  "T_INDENT",
-  "T_NEW_LINE",
-  "T_NAME",
-  "T_EOF"
-};
-
 typedef struct {
   TokenType type;
   char *text;
@@ -218,6 +209,15 @@ void refillFromStdin(char *startPos, int numToLoad) {
     }
   }
 }
+
+char* tokenTypeNames[] = {
+  "T_L_PAREN",
+  "T_R_PAREN",
+  "T_INDENT",
+  "T_NEW_LINE",
+  "T_NAME",
+  "T_EOF"
+};
 
 int main() {
   LexerContext *ctx = newLexerContext(refillFromStdin);
